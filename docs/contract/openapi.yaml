@@ -1,0 +1,277 @@
+openapi: 3.0.3
+info:
+  title: Student Management API
+  version: 1.0.0
+  description: |
+    Contract for the CRUD API Automation project. This file is the single source
+    of truth: the backend must implement it exactly and the Postman collection
+    must assert against it. Any change must be logged in decisions.md first.
+
+    Check order for requests that take an id and/or a body (deterministic):
+    1. id format (400 INVALID_ID)
+    2. JSON syntax (400 INVALID_JSON)
+    3. body validation (400 VALIDATION_ERROR)
+    4. existence (404 NOT_FOUND)
+    5. uniqueness (409 DUPLICATE_EMAIL)
+servers:
+  - url: http://localhost:5000
+    description: Local development (PORT is configurable)
+tags:
+  - name: system
+  - name: students
+  - name: test-support
+    description: Only registered when ENABLE_TEST_ROUTES=true
+
+paths:
+  /health:
+    get:
+      tags: [system]
+      operationId: getHealth
+      summary: Readiness check used by Newman and CI
+      responses:
+        '200':
+          description: API is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/students:
+    get:
+      tags: [students]
+      operationId: listStudents
+      summary: List students (optional filter and pagination)
+      parameters:
+        - name: course
+          in: query
+          required: false
+          description: Exact, case-insensitive match on course
+          schema: { type: string }
+        - name: page
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 100, default: 10 }
+      responses:
+        '200':
+          description: List of students
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentListResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+    post:
+      tags: [students]
+      operationId: createStudent
+      summary: Create a student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentInput'
+      responses:
+        '201':
+          description: Student created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '409':
+          $ref: '#/components/responses/DuplicateEmail'
+
+  /api/students/{id}:
+    parameters:
+      - $ref: '#/components/parameters/StudentId'
+    get:
+      tags: [students]
+      operationId: getStudent
+      summary: Get one student
+      responses:
+        '200':
+          description: The student
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResponse'
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [students]
+      operationId: updateStudent
+      summary: Replace a student (all input fields required)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentInput'
+      responses:
+        '200':
+          description: Student updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudentResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/DuplicateEmail'
+    delete:
+      tags: [students]
+      operationId: deleteStudent
+      summary: Delete a student
+      responses:
+        '204':
+          description: Deleted. The response body is empty.
+        '400':
+          $ref: '#/components/responses/InvalidId'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/test/reset:
+    post:
+      tags: [test-support]
+      operationId: resetTestData
+      summary: Delete all students (test cleanup only)
+      description: Returns 404 ROUTE_NOT_FOUND when ENABLE_TEST_ROUTES is not true.
+      responses:
+        '204':
+          description: All students removed
+
+components:
+  parameters:
+    StudentId:
+      name: id
+      in: path
+      required: true
+      description: 24-character lowercase hex string
+      schema:
+        type: string
+        pattern: '^[a-f0-9]{24}$'
+
+  schemas:
+    Student:
+      type: object
+      required: [id, name, email, course, year, cgpa, createdAt, updatedAt]
+      additionalProperties: false
+      properties:
+        id: { type: string, pattern: '^[a-f0-9]{24}$' }
+        name: { type: string, minLength: 1, maxLength: 100 }
+        email: { type: string, format: email, maxLength: 254 }
+        course: { type: string, minLength: 1, maxLength: 100 }
+        year: { type: integer, minimum: 1, maximum: 4 }
+        cgpa: { type: number, minimum: 0, maximum: 10 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    StudentInput:
+      type: object
+      required: [name, email, course, year, cgpa]
+      description: |
+        Unknown fields (including id, createdAt, updatedAt) are ignored.
+        Types are strict: year must be a JSON integer, cgpa a JSON number.
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100, example: John Doe }
+        email: { type: string, format: email, maxLength: 254, example: john@example.com }
+        course: { type: string, minLength: 1, maxLength: 100, example: CSE }
+        year: { type: integer, minimum: 1, maximum: 4, example: 3 }
+        cgpa: { type: number, minimum: 0, maximum: 10, example: 8.1 }
+
+    StudentResponse:
+      type: object
+      required: [success, data]
+      additionalProperties: false
+      properties:
+        success: { type: boolean, enum: [true] }
+        data: { $ref: '#/components/schemas/Student' }
+
+    StudentListResponse:
+      type: object
+      required: [success, count, total, page, limit, data]
+      additionalProperties: false
+      properties:
+        success: { type: boolean, enum: [true] }
+        count: { type: integer, minimum: 0, description: Items in this page }
+        total: { type: integer, minimum: 0, description: Items matching the filter }
+        page: { type: integer, minimum: 1 }
+        limit: { type: integer, minimum: 1, maximum: 100 }
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Student' }
+
+    HealthResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success: { type: boolean, enum: [true] }
+        data:
+          type: object
+          required: [status, storage]
+          properties:
+            status: { type: string, enum: [ok] }
+            storage: { type: string, enum: [mongo, memory] }
+
+    ErrorResponse:
+      type: object
+      required: [success, error]
+      additionalProperties: false
+      properties:
+        success: { type: boolean, enum: [false] }
+        error:
+          type: object
+          required: [code, message]
+          additionalProperties: false
+          properties:
+            code:
+              type: string
+              enum:
+                - VALIDATION_ERROR
+                - INVALID_ID
+                - INVALID_JSON
+                - NOT_FOUND
+                - DUPLICATE_EMAIL
+                - ROUTE_NOT_FOUND
+                - INTERNAL_ERROR
+            message: { type: string }
+            details:
+              type: array
+              description: Present for VALIDATION_ERROR, one entry per failing field
+              items:
+                type: object
+                required: [field, message]
+                properties:
+                  field: { type: string }
+                  message: { type: string }
+
+  responses:
+    ValidationError:
+      description: Invalid body, query parameter, or malformed JSON (code VALIDATION_ERROR, INVALID_JSON or INVALID_ID)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    InvalidId:
+      description: Id is not a 24-character lowercase hex string (code INVALID_ID)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    NotFound:
+      description: Well-formed id, but no such student (code NOT_FOUND)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+    DuplicateEmail:
+      description: Email already used by another student (code DUPLICATE_EMAIL)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
