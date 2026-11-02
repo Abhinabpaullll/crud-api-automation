@@ -1,0 +1,12 @@
+{
+  "name": "crud-api-automation-proof",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test:proof": "newman run postman/proof/Restful-Booker-Proof.postman_collection.json -e postman/proof/Restful-Booker.postman_environment.json -r cli,htmlextra,junit --reporter-htmlextra-export reports/proof/proof-report.html --reporter-junit-export reports/proof/proof-junit.xml"
+  },
+  "devDependencies": {
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.23.1"
+  }
+}
