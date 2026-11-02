@@ -43,6 +43,10 @@ Companion files: `openapi.yaml` (machine-readable contract), `../test-matrix.md`
 - Each data-driven iteration deletes the student it created.
 - Negative tests that must not depend on earlier requests create their own students and clean up.
 
+## D-21: Cross-origin resource sharing
+
+The backend installs the `cors` middleware so browser-based clients running on a different origin can call the API. It adds the appropriate CORS response headers and handles browser preflight requests; it does not change the API's request or response contract. Postman and Newman do not require CORS because they are not subject to browser same-origin enforcement.
+
 ## Environment variables (for `.env.example`)
 
 | Variable | Default | Purpose |
@@ -57,3 +61,4 @@ Companion files: `openapi.yaml` (machine-readable contract), `../test-matrix.md`
 | Date | Change | By |
 |---|---|---|
 | 2026-11-01 | Initial proposal | Stage 0 |
+| 2026-11-02 | Documented the existing CORS middleware rationale (D-21) | Stage 1b |

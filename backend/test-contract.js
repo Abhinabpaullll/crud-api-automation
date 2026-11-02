@@ -58,6 +58,13 @@ const ErrorResponse       = resolve(schemas.ErrorResponse);
 console.log('[contract] Schemas loaded and $refs resolved\n');
 
 // ── helpers ────────────────────────────────────────────────────────────────────
+function containsMongoInternals(value) {
+  if (value === null || typeof value !== 'object') return false;
+  if (Object.prototype.hasOwnProperty.call(value, '_id') ||
+      Object.prototype.hasOwnProperty.call(value, '__v')) return true;
+  return Object.values(value).some(containsMongoInternals);
+}
+
 function httpReq(method, urlPath, body) {
   return new Promise((resolve, reject) => {
     const payload = body !== undefined ? JSON.stringify(body) : undefined;
@@ -77,6 +84,9 @@ function httpReq(method, urlPath, body) {
       res.on('end', () => {
         let json = null;
         try { json = JSON.parse(data); } catch (_) {}
+        if (process.env.CONTRACT_STORAGE_MODE === 'mongo') {
+          check(`Mongo response contains no _id/__v (${method} ${urlPath})`, !containsMongoInternals(json));
+        }
         resolve({ status: res.statusCode, headers: res.headers, body: json, raw: data });
       });
     });
@@ -101,6 +111,9 @@ function rawReq(method, urlPath, rawBody) {
       res.on('end', () => {
         let json = null;
         try { json = JSON.parse(data); } catch (_) {}
+        if (process.env.CONTRACT_STORAGE_MODE === 'mongo') {
+          check(`Mongo response contains no _id/__v (${method} ${urlPath})`, !containsMongoInternals(json));
+        }
         resolve({ status: res.statusCode, headers: res.headers, body: json, raw: data });
       });
     });
