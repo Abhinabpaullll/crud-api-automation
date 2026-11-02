@@ -39,7 +39,7 @@ const mongoRepository = {
     // lean with virtuals gives us `id` but keeps _id; clean up
     const data = items.map((d) => {
       const { _id, __v, ...rest } = d;
-      return rest;
+      return { ...rest, id: _id.toString() };
     });
     return { data, total, count: data.length, page, limit };
   },
@@ -83,3 +83,4 @@ function escapeRegex(str) {
 }
 
 module.exports = mongoRepository;
+

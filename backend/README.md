@@ -106,3 +106,4 @@ backend/
         ├── idCheck.js           # 24-char hex id check (D-04, D-05)
         └── response.js          # Shared success / error envelope helpers
 ```
+

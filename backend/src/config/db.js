@@ -26,7 +26,7 @@ async function connect() {
   }
 
   try {
-    await mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
+    await mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 2000 });
     console.log('[storage] Connected to MongoDB');
     _repository = mongoRepository;
   } catch (err) {

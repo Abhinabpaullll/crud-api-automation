@@ -17,10 +17,10 @@
   "devDependencies": {
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
+    "mongodb-memory-server": "^11.3.0",
     "yaml": "^2.7.0"
   },
   "engines": {
     "node": ">=18.0.0"
   }
 }
-

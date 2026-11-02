@@ -13,11 +13,22 @@ const testRoutes    = require('./src/routes/test');
 
 const { jsonSyntaxErrorHandler, internalErrorHandler } = require('./src/middleware/errorHandler');
 const { error } = require('./src/utils/response');
+const { isValidId } = require('./src/utils/idCheck');
 
 const app = express();
 
 // ---------- global middleware ----------
 app.use(cors());
+
+// Check the path id before parsing JSON. Express router params run after
+// application middleware, so router.param alone cannot enforce D-08 ordering.
+app.use('/api/students', (req, res, next) => {
+  const match = req.path.match(/^\/([^/]+)$/);
+  if (match && ['GET', 'PUT', 'DELETE'].includes(req.method) && !isValidId(match[1])) {
+    return error(res, 400, 'INVALID_ID', 'id must be a 24-character lowercase hex string');
+  }
+  next();
+});
 
 // Parse JSON bodies; malformed JSON triggers jsonSyntaxErrorHandler below
 app.use(express.json());
@@ -49,3 +60,4 @@ app.use(internalErrorHandler);
 })();
 
 module.exports = app; // export for testing
+

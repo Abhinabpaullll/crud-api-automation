@@ -7,3 +7,4 @@ module.exports = {
   MONGODB_URI: process.env.MONGODB_URI || '',
   ENABLE_TEST_ROUTES: process.env.ENABLE_TEST_ROUTES === 'true',
 };
+

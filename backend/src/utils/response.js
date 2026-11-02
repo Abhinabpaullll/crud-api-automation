@@ -15,3 +15,4 @@ function error(res, statusCode, code, message, details) {
 }
 
 module.exports = { success, error };
+

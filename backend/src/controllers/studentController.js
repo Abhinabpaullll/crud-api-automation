@@ -2,18 +2,23 @@
 
 /**
  * Student controller.
- * Check order per D-08: id format -> JSON syntax -> body validation -> existence -> uniqueness.
+ *
+ * D-08 check order:
+ *   1. id format      → handled by router.param('id') in routes/students.js
+ *                        (fires before body parser, so INVALID_ID beats INVALID_JSON)
+ *   2. JSON syntax    → handled by express.json() error propagating to errorHandler
+ *   3. body validation→ validateStudentInput()
+ *   4. existence      → repo.findById()
+ *   5. uniqueness     → repo.create() / repo.update()
  */
 
 const { getRepository } = require('../config/db');
 const { validateStudentInput, validateListQuery } = require('../utils/validate');
-const { isValidId } = require('../utils/idCheck');
 const { success, error } = require('../utils/response');
 
 // POST /api/students
 async function createStudent(req, res, next) {
   try {
-    // D-08: JSON parsing errors are caught by middleware before we get here.
     const result = validateStudentInput(req.body);
     if (!result.valid) {
       return error(res, 400, 'VALIDATION_ERROR', 'Validation failed', result.details);
@@ -48,19 +53,14 @@ async function listStudents(req, res, next) {
 }
 
 // GET /api/students/:id
+// (id already validated by router.param)
 async function getStudent(req, res, next) {
   try {
-    // D-08 step 1: id format
-    if (!isValidId(req.params.id)) {
-      return error(res, 400, 'INVALID_ID', 'id must be a 24-character lowercase hex string');
-    }
-
     const repo = getRepository();
     const student = await repo.findById(req.params.id);
     if (!student) {
       return error(res, 404, 'NOT_FOUND', 'Student not found');
     }
-
     return success(res, 200, { data: student });
   } catch (err) {
     next(err);
@@ -68,14 +68,9 @@ async function getStudent(req, res, next) {
 }
 
 // PUT /api/students/:id
+// (id already validated by router.param)
 async function updateStudent(req, res, next) {
   try {
-    // D-08 step 1: id format
-    if (!isValidId(req.params.id)) {
-      return error(res, 400, 'INVALID_ID', 'id must be a 24-character lowercase hex string');
-    }
-
-    // D-08 step 2: JSON syntax errors already handled by middleware.
     // D-08 step 3: body validation
     const result = validateStudentInput(req.body);
     if (!result.valid) {
@@ -90,7 +85,7 @@ async function updateStudent(req, res, next) {
       return error(res, 404, 'NOT_FOUND', 'Student not found');
     }
 
-    // D-08 step 5: uniqueness (performed inside repo.update)
+    // D-08 step 5: uniqueness (handled inside repo.update)
     const outcome = await repo.update(req.params.id, result.data);
     if (!outcome) {
       return error(res, 404, 'NOT_FOUND', 'Student not found');
@@ -106,19 +101,14 @@ async function updateStudent(req, res, next) {
 }
 
 // DELETE /api/students/:id
+// (id already validated by router.param)
 async function deleteStudent(req, res, next) {
   try {
-    // D-08 step 1: id format
-    if (!isValidId(req.params.id)) {
-      return error(res, 400, 'INVALID_ID', 'id must be a 24-character lowercase hex string');
-    }
-
     const repo = getRepository();
     const deleted = await repo.remove(req.params.id);
     if (!deleted) {
       return error(res, 404, 'NOT_FOUND', 'Student not found');
     }
-
     // D-06: 204 No Content with empty body
     return res.status(204).end();
   } catch (err) {
