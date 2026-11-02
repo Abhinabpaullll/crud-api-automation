@@ -1,0 +1,40 @@
+name: API tests
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm ci
+        working-directory: backend
+      - name: Start memory backend
+        shell: bash
+        run: |
+          MONGODB_URI= ENABLE_TEST_ROUTES=true PORT=5000 node backend/server.js > "$RUNNER_TEMP/backend.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/backend.pid"
+      - name: Wait for health
+        shell: bash
+        run: |
+          for i in {1..40}; do
+            if curl --fail --silent http://127.0.0.1:5000/health; then exit 0; fi
+            sleep 0.5
+          done
+          cat "$RUNNER_TEMP/backend.log"
+          exit 1
+      - run: npm run test:all
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: api-reports
+          path: reports/
+          if-no-files-found: warn

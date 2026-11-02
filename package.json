@@ -3,7 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test:proof": "newman run postman/proof/Restful-Booker-Proof.postman_collection.json -e postman/proof/Restful-Booker.postman_environment.json -r cli,htmlextra,junit --reporter-htmlextra-export reports/proof/proof-report.html --reporter-junit-export reports/proof/proof-junit.xml"
+    "test:proof": "newman run postman/proof/Restful-Booker-Proof.postman_collection.json -e postman/proof/Restful-Booker.postman_environment.json -r cli,htmlextra,junit --reporter-htmlextra-export reports/proof/proof-report.html --reporter-junit-export reports/proof/proof-junit.xml",
+    "schemas:generate": "node postman/tools/generate-openapi-schemas.js",
+    "collection:generate": "node postman/tools/build-collection.js && npm run schemas:generate",
+    "test:api": "npm run collection:generate && node postman/tools/run-newman.js --folder \"00 Health\" --folder \"01 CRUD Lifecycle\" --folder \"02 Validation (Negative)\" --folder \"03 Uniqueness\" --folder \"04 Errors and Routing\" -r cli,htmlextra,junit --reporter-htmlextra-export reports/api/api-report.html --reporter-junit-export reports/api/api-junit.xml",
+    "test:data": "node postman/tools/run-newman.js --folder \"05 Data-Driven\" --iteration-data postman/test-data.csv -r cli,htmlextra,junit --reporter-htmlextra-export reports/api/data-report.html --reporter-junit-export reports/api/data-junit.xml",
+    "test:reset-disabled": "node postman/tools/test-reset-disabled.js",
+    "test:all": "npm run test:api && npm run test:data && npm run test:reset-disabled"
   },
   "devDependencies": {
     "newman": "^6.2.1",
