@@ -288,7 +288,7 @@
             "url": "{{base_url}}/api/students",
             "body": {
               "mode": "raw",
-              "raw": "{\"email\":\"missing1793644166884@example.com\",\"course\":\"CSE\",\"year\":2,\"cgpa\":7}"
+              "raw": "{\"email\":\"missing1793646034351@example.com\",\"course\":\"CSE\",\"year\":2,\"cgpa\":7}"
             }
           },
           "event": [
@@ -1018,6 +1018,41 @@
           ]
         },
         {
+          "name": "TC25 Create target student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/students",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"TC25 Target {{run_id}}\",\"email\":\"tc25seed{{run_id}}@example.com\",\"course\":\"{{unique_course}}\",\"year\":2,\"cgpa\":8.2}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": []
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(()=>{const id='TC25 seed';pm.test(id+': HTTP 201',()=>pm.response.to.have.status(201));try { const s=JSON.parse(pm.collectionVariables.get('openapi_StudentResponse')||'{}'); pm.test('schema: OpenAPI StudentResponse',()=>pm.expect(tv4.validate(pm.response.json(),s),JSON.stringify(tv4.error)).to.eql(true)); } catch(e) { pm.test('schema: OpenAPI StudentResponse',()=>{throw e;}); }pm.environment.set('cleanup_id',pm.response.json().data.id);})();"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "TC25 PUT missing required field",
           "request": {
             "method": "PUT",
@@ -1027,7 +1062,7 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{base_url}}/api/students/{{student_id}}",
+            "url": "{{base_url}}/api/students/{{cleanup_id}}",
             "body": {
               "mode": "raw",
               "raw": "{\"name\":\"Missing course\",\"email\":\"tc25{{run_id}}@example.com\",\"year\":2,\"cgpa\":7}"
@@ -1053,6 +1088,102 @@
           ]
         },
         {
+          "name": "TC25 Cleanup target student",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/api/students/{{cleanup_id}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": []
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(()=>{const id='TC25 cleanup';pm.test(id+': HTTP 204',()=>pm.response.to.have.status(204));pm.environment.unset('cleanup_id');})();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC28 Create matching-course student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/students",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"TC28 Matching {{run_id}}\",\"email\":\"tc28match{{run_id}}@example.com\",\"course\":\"{{unique_course}}\",\"year\":2,\"cgpa\":8.2}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": []
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(()=>{const id='TC28 match seed';pm.test(id+': HTTP 201',()=>pm.response.to.have.status(201));try { const s=JSON.parse(pm.collectionVariables.get('openapi_StudentResponse')||'{}'); pm.test('schema: OpenAPI StudentResponse',()=>pm.expect(tv4.validate(pm.response.json(),s),JSON.stringify(tv4.error)).to.eql(true)); } catch(e) { pm.test('schema: OpenAPI StudentResponse',()=>{throw e;}); }pm.environment.set('filter_match_id',pm.response.json().data.id);})();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC28 Create non-matching-course student",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/students",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"TC28 Other\",\"email\":\"tc28other{{run_id}}@example.com\",\"course\":\"OTHER{{run_id}}\",\"year\":2,\"cgpa\":8}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": []
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(()=>{const id='TC28 other seed';pm.test(id+': HTTP 201',()=>pm.response.to.have.status(201));try { const s=JSON.parse(pm.collectionVariables.get('openapi_StudentResponse')||'{}'); pm.test('schema: OpenAPI StudentResponse',()=>pm.expect(tv4.validate(pm.response.json(),s),JSON.stringify(tv4.error)).to.eql(true)); } catch(e) { pm.test('schema: OpenAPI StudentResponse',()=>{throw e;}); }pm.environment.set('filter_other_id',pm.response.json().data.id);})();"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "TC28 Filter by course",
           "request": {
             "method": "GET",
@@ -1072,7 +1203,59 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "(()=>{const id='TC28';pm.test(id+': HTTP 200',()=>pm.response.to.have.status(200));try { const s=JSON.parse(pm.collectionVariables.get('openapi_StudentListResponse')||'{}'); pm.test('schema: OpenAPI StudentListResponse',()=>pm.expect(tv4.validate(pm.response.json(),s),JSON.stringify(tv4.error)).to.eql(true)); } catch(e) { pm.test('schema: OpenAPI StudentListResponse',()=>{throw e;}); }pm.test('TC28: all returned courses match filter',()=>pm.expect(pm.response.json().data.every(x=>x.course.toLowerCase()===pm.environment.get('unique_course').toLowerCase())).to.eql(true));})();"
+                  "(()=>{const id='TC28';pm.test(id+': HTTP 200',()=>pm.response.to.have.status(200));try { const s=JSON.parse(pm.collectionVariables.get('openapi_StudentListResponse')||'{}'); pm.test('schema: OpenAPI StudentListResponse',()=>pm.expect(tv4.validate(pm.response.json(),s),JSON.stringify(tv4.error)).to.eql(true)); } catch(e) { pm.test('schema: OpenAPI StudentListResponse',()=>{throw e;}); }const b=pm.response.json();pm.test('TC28: matching student is present and all courses match',()=>{pm.expect(b.data.map(x=>x.id)).to.include(pm.environment.get('filter_match_id'));pm.expect(b.data.every(x=>x.course.toLowerCase()===pm.environment.get('unique_course').toLowerCase())).to.eql(true)});})();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC28 Cleanup matching-course student",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/api/students/{{filter_match_id}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": []
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(()=>{const id='TC28 cleanup match';pm.test(id+': HTTP 204',()=>pm.response.to.have.status(204));pm.environment.unset('filter_match_id');})();"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC28 Cleanup non-matching-course student",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{base_url}}/api/students/{{filter_other_id}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": []
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(()=>{const id='TC28 cleanup other';pm.test(id+': HTTP 204',()=>pm.response.to.have.status(204));pm.environment.unset('filter_other_id');})();"
                 ]
               }
             }
@@ -1612,6 +1795,32 @@
       "name": "04 Errors and Routing",
       "item": [
         {
+          "name": "TC15 Error response JSON Content-Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/api/unknown"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": []
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "(()=>{const id='TC15';pm.test(id+': HTTP 404',()=>pm.response.to.have.status(404));let b;try{b=pm.response.json()}catch(e){} pm.test(id+': error code ROUTE_NOT_FOUND',()=>pm.expect(b&&b.error&&b.error.code).to.eql('ROUTE_NOT_FOUND'));pm.test(id+': JSON error content type',()=>pm.expect(pm.response.headers.get('Content-Type')||'').to.include('application/json'));try { const s=JSON.parse(pm.collectionVariables.get('openapi_ErrorResponse')||'{}'); pm.test('schema: OpenAPI ErrorResponse',()=>pm.expect(tv4.validate(pm.response.json(),s),JSON.stringify(tv4.error)).to.eql(true)); } catch(e) { pm.test('schema: OpenAPI ErrorResponse',()=>{throw e;}); }})();"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "TC18 Unknown route",
           "request": {
             "method": "GET",
@@ -1822,6 +2031,14 @@
     },
     {
       "key": "first_student_id",
+      "value": ""
+    },
+    {
+      "key": "filter_match_id",
+      "value": ""
+    },
+    {
+      "key": "filter_other_id",
       "value": ""
     },
     {

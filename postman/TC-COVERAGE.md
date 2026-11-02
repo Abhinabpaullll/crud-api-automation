@@ -16,7 +16,7 @@
 | TC12 | `TC12 Reject duplicate email` (seed and cleanup requests are also labelled TC12) |
 | TC13 | `TC13 Update non-existing student` |
 | TC14 | `TC14 Delete non-existing student` |
-| TC15 | `TC15 JSON response Content-Type` |
+| TC15 | `TC15 JSON response Content-Type`; `TC15 Error response JSON Content-Type` |
 | TC16 | `TC16 Malformed student ID` |
 | TC17 | `TC17 Malformed JSON body` |
 | TC18 | `TC18 Unknown route` |
@@ -26,10 +26,10 @@
 | TC22 | `TC22 Wrong field types` |
 | TC23 | `TC23 Reject different-case email` (seed and cleanup requests are also labelled TC23) |
 | TC24 | `TC24 Reject PUT with another student email` (two seed and two cleanup requests are also labelled TC24) |
-| TC25 | `TC25 PUT missing required field` |
+| TC25 | `TC25 Create target student`; `TC25 PUT missing required field`; `TC25 Cleanup target student` |
 | TC26 | `TC04 Update existing student` test `TC26: createdAt unchanged and updatedAt advances` |
 | TC27 | `TC27 Update persisted` |
-| TC28 | `TC28 Filter by course` |
+| TC28 | `TC28 Create matching-course student`; `TC28 Create non-matching-course student`; `TC28 Filter by course`; `TC28 Cleanup matching-course student`; `TC28 Cleanup non-matching-course student` |
 | TC29 | `TC29 Invalid pagination 1`; `TC29 Invalid pagination 2`; `TC29 Invalid pagination 3` |
 | TC30 | `TC30 Health readiness` |
 | TC31 | Collection-level test script: `TC31: CRUD response under 500 ms`, applied to each request whose URL contains `/api/students` |

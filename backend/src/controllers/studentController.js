@@ -15,6 +15,7 @@
 const { getRepository } = require('../config/db');
 const { validateStudentInput, validateListQuery } = require('../utils/validate');
 const { success, error } = require('../utils/response');
+const { INJECT_BUG } = require('../config/env');
 
 // POST /api/students
 async function createStudent(req, res, next) {
@@ -108,6 +109,9 @@ async function deleteStudent(req, res, next) {
     const deleted = await repo.remove(req.params.id);
     if (!deleted) {
       return error(res, 404, 'NOT_FOUND', 'Student not found');
+    }
+    if (INJECT_BUG === 'delete-returns-200') {
+      return success(res, 200, { data: { id: req.params.id, deleted: true } });
     }
     // D-06: 204 No Content with empty body
     return res.status(204).end();

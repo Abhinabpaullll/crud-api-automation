@@ -17,6 +17,7 @@
  */
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const { INJECT_BUG } = require('../config/env');
 
 function validateStudentInput(raw) {
   const details = [];
@@ -40,8 +41,10 @@ function validateStudentInput(raw) {
   } else {
     const email = raw.email.trim().toLowerCase();
     if (email.length === 0) details.push({ field: 'email', message: 'email must not be blank' });
-    else if (email.length > 254) details.push({ field: 'email', message: 'email must be at most 254 characters' });
-    else if (!EMAIL_RE.test(email)) details.push({ field: 'email', message: 'email must be a valid email address' });
+    else if (INJECT_BUG !== 'skip-email-validation') {
+      if (email.length > 254) details.push({ field: 'email', message: 'email must be at most 254 characters' });
+      else if (!EMAIL_RE.test(email)) details.push({ field: 'email', message: 'email must be a valid email address' });
+    }
   }
 
   // --- course ---
@@ -60,8 +63,11 @@ function validateStudentInput(raw) {
     details.push({ field: 'year', message: 'year is required' });
   } else if (typeof raw.year !== 'number' || !Number.isInteger(raw.year)) {
     details.push({ field: 'year', message: 'year must be an integer' });
-  } else if (raw.year < 1 || raw.year > 4) {
-    details.push({ field: 'year', message: 'year must be between 1 and 4' });
+  } else {
+    const maximumYear = INJECT_BUG === 'year-upper-bound-5' ? 5 : 4;
+    if (raw.year < 1 || raw.year > maximumYear) {
+      details.push({ field: 'year', message: `year must be between 1 and ${maximumYear}` });
+    }
   }
 
   // --- cgpa (must be a JSON number, 0-10 inclusive) ---

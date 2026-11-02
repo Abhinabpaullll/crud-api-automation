@@ -3,7 +3,7 @@
 const express = require('express');
 const cors    = require('cors');
 
-const { ENABLE_TEST_ROUTES } = require('./src/config/env');
+const { ENABLE_TEST_ROUTES, INJECT_BUG } = require('./src/config/env');
 const { connect }            = require('./src/config/db');
 const { PORT }               = require('./src/config/env');
 
@@ -16,6 +16,10 @@ const { error } = require('./src/utils/response');
 const { isValidId } = require('./src/utils/idCheck');
 
 const app = express();
+
+if (INJECT_BUG) {
+  console.warn(`[fault-injection] INJECT_BUG=${INJECT_BUG} — intentional fault enabled`);
+}
 
 // ---------- global middleware ----------
 app.use(cors());

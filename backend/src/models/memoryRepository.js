@@ -9,6 +9,7 @@
  */
 
 const crypto = require('crypto');
+const { INJECT_BUG } = require('../config/env');
 
 /** @type {Map<string, object>} id -> student plain object */
 const store = new Map();
@@ -31,9 +32,11 @@ const memoryRepository = {
    */
   create(fields) {
     // uniqueness check (case-insensitive already since email is normalised before calling)
-    for (const doc of store.values()) {
-      if (doc._emailLower === fields.email) {
-        return { duplicate: true };
+    if (INJECT_BUG !== 'skip-unique-email') {
+      for (const doc of store.values()) {
+        if (doc._emailLower === fields.email) {
+          return { duplicate: true };
+        }
       }
     }
     const now = new Date().toISOString();
@@ -89,9 +92,11 @@ const memoryRepository = {
     const existing = store.get(id);
     if (!existing) return null;
     // Check uniqueness: another student may not already hold this email
-    for (const [sid, doc] of store.entries()) {
-      if (sid !== id && doc._emailLower === fields.email) {
-        return { duplicate: true };
+    if (INJECT_BUG !== 'skip-unique-email') {
+      for (const [sid, doc] of store.entries()) {
+        if (sid !== id && doc._emailLower === fields.email) {
+          return { duplicate: true };
+        }
       }
     }
     const updated = {
