@@ -1,6 +1,6 @@
 # Decision Log (API Contract v1.0.0)
 
-Status: **PROPOSED**. Review once, then mark **FROZEN** before Stage 1 starts.
+Status: **FROZEN**. Frozen on 2026-11-02 after Stage 1b verification. Any change must be logged here before code or tests change.
 After freezing, any change must be added here as a new dated entry *before* code or tests change.
 
 Companion files: `openapi.yaml` (machine-readable contract), `../test-matrix.md` (test cases and bug catalogue).
