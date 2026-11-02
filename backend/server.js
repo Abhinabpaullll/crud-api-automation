@@ -56,12 +56,27 @@ app.use(jsonSyntaxErrorHandler);
 app.use(internalErrorHandler);
 
 // ---------- start ----------
-(async () => {
+async function start() {
   await connect();
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`[server] Listening on http://localhost:${PORT}`);
   });
-})();
+
+  // Keep idle clients from occupying sockets indefinitely. The health route is
+  // synchronous, while requestTimeout bounds slow or stalled incoming bodies.
+  server.requestTimeout = 15000;
+  server.headersTimeout = 16000;
+  server.keepAliveTimeout = 5000;
+  server.on('error', err => {
+    console.error(`[server] Failed to listen on port ${PORT}: ${err.message}`);
+    process.exit(1);
+  });
+}
+
+start().catch(err => {
+  console.error(`[server] Startup failed before listening: ${err.stack || err.message}`);
+  process.exitCode = 1;
+});
 
 module.exports = app; // export for testing
 

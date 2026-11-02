@@ -29,7 +29,7 @@ The response has a status line (such as `201 Created`), headers (such as `Conten
 $env:PORT = '5000'
 $env:MONGODB_URI = ''
 $env:ENABLE_TEST_ROUTES = 'true'
-npm --prefix backend start
+npm start
 ```
 
 An empty Mongo URI selects the memory repository. `/health` tells you which storage mode is active. The two repositories share the same methods so controllers do not need separate CRUD logic.
@@ -64,7 +64,7 @@ Postman is useful interactively; Newman runs the same collection from a terminal
 npm run test:all
 ```
 
-Newman prints request/assertion counts and returns a nonzero exit code if an assertion fails. It also writes HTML and JUnit reports under `reports/api/`.
+`test:all` checks readiness, starts and cleans up an API when necessary, then runs all three suites. Newman prints request/assertion counts and returns a nonzero exit code if an assertion fails. It also writes HTML and JUnit reports under `reports/api/`.
 
 The CSV contains eight valid students. `test:data` executes create, get, and delete for every row. The runtime email includes the row’s local name, run ID, and iteration index.
 

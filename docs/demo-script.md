@@ -1,24 +1,88 @@
-# Project demonstration script (about 8 minutes)
+# Seven-minute examiner demonstration
 
-## Before the demo
+## Before the demonstration
 
-- Install root and backend dependencies with `npm ci` and `npm --prefix backend ci`.
-- Start the API with `PORT=5000`, empty `MONGODB_URI`, and `ENABLE_TEST_ROUTES=true`.
-- Keep Postman open with the `Student-API-Local` environment selected.
-- Ensure the live server is ready at `/health`.
+Open PowerShell at the repository root. Ensure dependencies are installed with `npm ci` and `npm --prefix backend ci`. Open Postman and import `postman/Student-CRUD-API.postman_collection.json` and `postman/Student-API-Local.postman_environment.json`. Select the `Student-API-Local` environment. The walkthrough uses the memory store; no MongoDB service is required.
 
-## Walkthrough
+## Timed walkthrough
 
-1. **Introduce the goal (45 sec).** Explain that this project tests a Student API against a frozen OpenAPI contract and has no frontend.
-2. **Show the contract (60 sec).** Open `docs/contract/openapi.yaml`; point out `POST /api/students`, the student schema, success/error statuses, and 204 empty-body rule.
-3. **Show readiness and create (90 sec).** In Postman, run TC30 then TC01. Show status `201`, returned 24-hex `id`, normalized email, and timestamps.
-4. **Show chained lifecycle (90 sec).** Run TC02–TC06 and TC32. Explain that the collection saves the ID, verifies the update, then checks deletion and the second delete.
-5. **Show validation and uniqueness (90 sec).** Run TC09, TC10, TC12, TC23, and TC24. Point to exact statuses, codes, and field details.
-6. **Show data-driven execution (60 sec).** Run `npm run test:data`; explain the eight CSV rows, iteration index, and cleanup.
-7. **Show Newman reports (60 sec).** Run `npm run test:all`; open `reports/api/api-report.html` or the JUnit XML. Explain zero failures and exit code 0.
-8. **Show fault detection (60 sec).** Run `npm run test:mutations`. Point out B01 causes TC05 to fail and the restored folder passes.
-9. **Close with CI and scope (45 sec).** Show the workflow and explain the user must push to GitHub before an Actions run can be inspected. Mention Mongo uses an isolated test server.
+### 0:00–0:35 — Introduce the project
 
-## Expected explanation
+**Say:** “This is a Student CRUD API and an automated validation framework. The OpenAPI contract defines expected responses, Postman contains the reusable requests and assertions, and Newman runs those same checks in a terminal or CI. My project focus is repeatable API validation; it does not include a frontend.”
 
-“The contract is the expected behavior. Newman sends real HTTP requests and checks status, headers, response fields, and schemas. Each test uses controlled data and cleans up. The CI job repeats the same checks automatically. Mutation cases demonstrate that specific assertions fail when known defects are introduced.”
+### 0:35–1:15 — Start and check readiness
+
+Run:
+
+```powershell
+$env:PORT = '5000'
+$env:MONGODB_URI = ''
+$env:ENABLE_TEST_ROUTES = 'true'
+npm start
+```
+
+In a second PowerShell window, run:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:5000/health
+```
+
+**Show:** startup says `using IN-MEMORY store`; health returns `status: ok` and `storage: memory`.
+
+**Say:** “The health endpoint tells me the server is ready and which repository it selected. The test-only reset route is enabled only for this demo session.”
+
+### 1:15–2:00 — Explain the contract and architecture
+
+Open `docs/contract/openapi.yaml` and show `GET /health`, `POST /api/students`, and the student response schema. Then show the architecture diagram in `docs/architecture-explanation.md`.
+
+**Say:** “The contract is the fixed expected behavior. The Express route calls a controller, which uses the same repository interface whether data is in MongoDB or memory. Postman checks actual HTTP responses; the separate contract test loads this YAML and validates live responses with Ajv.”
+
+### 2:00–3:25 — Demonstrate the CRUD lifecycle
+
+In Postman, open **Student CRUD API → 00 Health → TC30 Health readiness** and click **Send**. Then open **01 CRUD Lifecycle → TC01 Create valid student**, click **Send**, and point to `201`, the 24-character ID, normalized email, and timestamps. Continue through TC02 (filtered list), TC03 (get), TC04 (full update), TC27 (persistence), TC05 (delete), and TC06 (get deleted record). Use the ID saved by TC01; do not edit it manually.
+
+**Say:** “The create test saves its returned ID into the environment. The following requests reuse it, check the updated fields and timestamps, then verify the 204 empty delete response and the 404 after deletion.”
+
+### 3:25–4:20 — Show validation and uniqueness
+
+Open **02 Validation (Negative)** and send TC09 (invalid email) and TC10 (out-of-range year). Then open **03 Uniqueness** and send TC23 (same email with different case) and TC24 (PUT onto another student’s email).
+
+**Show:** validation returns 400 with `VALIDATION_ERROR`; duplicate email returns 409 with `DUPLICATE_EMAIL`.
+
+**Say:** “Negative tests check the exact status and error code, not just whether the request failed. The uniqueness checks show that email normalization applies across create and update.”
+
+### 4:20–5:20 — Run Newman and inspect reports
+
+Stop the manually started server with **Ctrl+C**. In PowerShell run:
+
+```powershell
+npm run test:all
+```
+
+**Show:** the runner reports that it starts the backend, then the three Newman summary tables and exit code `0`. Open `reports/api/api-report.html` and `reports/api/data-report.html`.
+
+**Say:** “The all-tests command checks health, starts its own server when needed, and cleans up only that server. Each Newman request and collection has a time limit, so an unresponsive API fails instead of hanging indefinitely.”
+
+### 5:20–6:10 — Show repeatable data and fault detection
+
+Point to `postman/test-data.csv` and explain that the data-driven folder creates, reads, and deletes one student for each of its eight rows. Then run:
+
+```powershell
+npm run test:mutations
+```
+
+**Show:** an expected mutation failure such as B01/TC05, followed by the restored folder passing.
+
+**Say:** “Mutation testing deliberately introduces a known defect. The expected test must detect it, and the same test must pass again after the defect is removed.”
+
+### 6:10–7:00 — Close with contract and CI
+
+Show `.github/workflows/api-tests.yml` and the JUnit report `reports/api/api-junit.xml`.
+
+**Say:** “GitHub Actions installs both dependency sets, starts the memory backend, waits for health, runs the same suite, and uploads the reports. This workflow file is configured locally; a hosted run can only be shown after the repository has a GitHub remote and a workflow run.”
+
+Finish with: “The project demonstrates API behavior, contract checks, repeatable test data, readable reports, and CI automation while keeping the contract as the source of expected behavior.”
+
+## Demo reset
+
+Press **Ctrl+C** in any remaining manually started API window. `npm run test:all`, `npm run test:mongo`, and the contract helpers clean up the server processes they start. Generated reports remain under `reports/` and are ignored by Git.

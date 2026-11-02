@@ -288,7 +288,7 @@
             "url": "{{base_url}}/api/students",
             "body": {
               "mode": "raw",
-              "raw": "{\"email\":\"missing1793646034351@example.com\",\"course\":\"CSE\",\"year\":2,\"cgpa\":7}"
+              "raw": "{\"email\":\"missing-name@example.com\",\"course\":\"CSE\",\"year\":2,\"cgpa\":7}"
             }
           },
           "event": [

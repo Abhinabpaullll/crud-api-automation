@@ -24,7 +24,7 @@ req('TC05 Delete existing student','DELETE','/api/students/{{student_id}}',null,
 req('TC06 Get deleted student','GET','/api/students/{{student_id}}',null,assert('TC06',404,'NOT_FOUND','ErrorResponse')),
 req('TC32 Delete twice','DELETE','/api/students/{{student_id}}',null,assert('TC32',404,'NOT_FOUND','ErrorResponse')));
 function badPost(name,id,body,field){add('02 Validation (Negative)',req(name,'POST','/api/students',JSON.stringify(body),assert(id,400,'VALIDATION_ERROR','ErrorResponse',field?`pm.test('${id}: details field ${field}',()=>pm.expect(pm.response.json().error.details.map(x=>x.field)).to.include('${field}'));`:'')))}
-badPost('TC08 Create without name','TC08',{email:'missing'+Date.now()+'@example.com',course:'CSE',year:2,cgpa:7},'name');
+badPost('TC08 Create without name','TC08',{email:'missing-name@example.com',course:'CSE',year:2,cgpa:7},'name');
 badPost('TC09 Invalid email','TC09',{name:'Invalid Email',email:'bad-email',course:'CSE',year:2,cgpa:7},'email');
 for(const [year,suffix] of [[0,'zero'],[5,'five']]) badPost(`TC10 Invalid year ${year}`,'TC10',{name:'Bad year',email:`tc10${suffix}{{run_id}}@example.com`,course:'CSE',year,cgpa:7},'year');
 for(const [cgpa,suffix] of [[-0.1,'low'],[10.1,'high']]) badPost(`TC11 Invalid CGPA ${cgpa}`,'TC11',{name:'Bad CGPA',email:`tc11${suffix}{{run_id}}@example.com`,course:'CSE',year:2,cgpa},'cgpa');

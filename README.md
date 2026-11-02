@@ -2,12 +2,14 @@
 
 This academic project builds a small Student Management REST API and checks it with Postman and Newman. The API has no frontend. Its OpenAPI document is the frozen contract; the automated tests compare real responses with that contract.
 
+The goal is to show how an API can be specified, implemented, and checked with repeatable positive, negative, boundary, data-driven, contract, and mutation tests.
+
 ## What is included
 
 - Express API for student create, list, get, replace, and delete operations.
 - MongoDB/Mongoose storage with a matching in-memory repository when MongoDB is unset or unreachable.
 - Strict input validation, normalized email addresses, stable public IDs, and contract-shaped errors.
-- A Postman v2.1 collection for TC01–TC35, plus a CSV-driven lifecycle and cleanup.
+- A Postman v2.1 collection for matrix cases TC01–TC35, the TC36 reset-route check, and CSV-driven lifecycle cleanup.
 - Newman CLI, HTML and JUnit reports, generated response schemas, and a GitHub Actions workflow.
 - An independent Restful-Booker proof collection in `postman/proof/`.
 
@@ -34,6 +36,7 @@ GitHub Actions ── installs, starts memory API, runs test:all, uploads report
 | Technology | Purpose |
 |---|---|
 | Node.js and Express | Run the HTTP API and middleware. |
+| CORS middleware | Lets browser-based clients call the API across origins. |
 | Mongoose and MongoDB | Persistent storage with a unique email index. |
 | Memory repository | Fast, isolated local/CI fallback with the same repository interface. |
 | OpenAPI 3.0 | Describe endpoints, statuses, request fields, and response schemas. |
@@ -59,18 +62,30 @@ npm --prefix backend ci
 
 Do not commit `.env` files. Both root and backend `.env.example` files contain placeholders only.
 
+| Variable | Default | Purpose |
+|---|---|---|
+| `PORT` | `5000` | Local HTTP port. |
+| `MONGODB_URI` | empty | Selects MongoDB when reachable; empty or unavailable selects memory mode. |
+| `ENABLE_TEST_ROUTES` | `false` | Enables the test-only `POST /api/test/reset` route. |
+| `INJECT_BUG` | empty | Opt-in demonstration fault. Leave unset for normal testing. |
+
 ## Start the API
 
-For the usual in-memory store, open a PowerShell window:
+From the repository root, start the API with:
 
 ```powershell
 $env:PORT = '5000'
 $env:MONGODB_URI = ''
 $env:ENABLE_TEST_ROUTES = 'true'
-npm --prefix backend start
+npm start
 ```
 
-`ENABLE_TEST_ROUTES=true` is needed by the normal test suite because it verifies the enabled reset route. A separate test starts a second server with the route disabled and expects `404 ROUTE_NOT_FOUND`.
+This runs `backend/server.js` on port 5000. Set `MONGODB_URI` to choose MongoDB;
+leave it unset or empty for memory mode. Set `ENABLE_TEST_ROUTES=true` when
+running manual reset-route tests. `test:all` sets it for the server it starts.
+Stop the manually started server with `Ctrl+C`. Mongo selection has a finite
+two-second server-selection timeout; on failure the log states that memory mode
+was selected.
 
 Check readiness in another PowerShell window:
 
@@ -89,6 +104,11 @@ Import these files into Postman:
 
 Choose the `Student-API-Local` environment. Its default `base_url` is `http://localhost:5000`.
 
+In Postman, open the collection, select the local environment, then use **Run**
+to run all six ordered folders. The main CRUD requests are chained: TC01 saves
+the new ID, later requests read and update it, and the final requests delete it.
+TC25 and TC28 create and clean up their own setup data.
+
 From the repository root:
 
 ```powershell
@@ -97,7 +117,18 @@ npm run test:data
 npm run test:all
 ```
 
-`test:api` covers folders 00–04. `test:data` runs folder 05 once per CSV row. `test:all` runs both, then verifies reset-route-disabled behavior. Newman returns a nonzero exit code when an assertion fails.
+`test:api` covers folders 00–04. `test:data` runs folder 05 once per CSV row.
+The standalone `test:api` and `test:data` commands expect the API to be running
+at `base_url` with test routes enabled.
+`test:all` checks `/health`, reuses a ready local API or starts and cleans up
+`backend/server.js`, then runs both suites and verifies reset-route-disabled
+behavior. Newman requests time out after 10 seconds and each collection is
+limited to 3 minutes. This turns an unresponsive API into a finite test failure.
+If the configured local port accepts connections but fails the health check,
+the runner stops with a diagnostic rather than launching another API process.
+The collection and OpenAPI-derived schema variables are generated with
+`npm run collection:generate`; generated response schemas are checked into
+`postman/tools/openapi-response-schemas.json` for Postman imports.
 
 ## Reports
 
@@ -108,6 +139,11 @@ npm run test:proof
 ```
 
 Generated reports and logs are ignored by `.gitignore` so they do not get committed accidentally. GitHub Actions uploads `reports/` as an artifact even when tests fail.
+
+Open `reports/api/api-report.html` for the main suite and
+`reports/api/data-report.html` for the CSV suite. Their matching JUnit files
+are `api-junit.xml` and `data-junit.xml`. The independent public API proof run
+writes under `reports/proof/`.
 
 ## In-memory, MongoDB, and contract checks
 
@@ -180,6 +216,8 @@ reports/       generated HTML/JUnit outputs and logs (ignored by Git)
 - [Test cases](docs/test-cases.md)
 - [Project report and audit](docs/project-report.md)
 - [Learning guide](docs/learning-guide.md)
+- [Architecture explanation](docs/architecture-explanation.md)
+- [Troubleshooting](docs/troubleshooting.md)
 - [Viva questions](docs/viva-questions.md)
 - [Demo script](docs/demo-script.md)
 - [Screenshot checklist](docs/screenshot-checklist.md)

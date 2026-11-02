@@ -4,7 +4,21 @@ node_modules/
 # Environment files
 .env
 .env.local
-.env.*.local
+.env.*
+!.env.example
+
+# Local database and temporary files
+*.db
+*.bson
+*.sqlite
+*.sqlite3
+*.tmp
+*.temp
+*.wt
+mongod.lock
+WiredTiger*
+diagnostic.data/
+journal/
 
 # Logs
 npm-debug.log*
