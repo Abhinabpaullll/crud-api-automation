@@ -1,0 +1,359 @@
+{
+  "Student": {
+    "type": "object",
+    "required": [
+      "id",
+      "name",
+      "email",
+      "course",
+      "year",
+      "cgpa",
+      "createdAt",
+      "updatedAt"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{24}$"
+      },
+      "name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "email": {
+        "type": "string",
+        "format": "email",
+        "maxLength": 254
+      },
+      "course": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "year": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 4
+      },
+      "cgpa": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 10
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "StudentInput": {
+    "type": "object",
+    "required": [
+      "name",
+      "email",
+      "course",
+      "year",
+      "cgpa"
+    ],
+    "description": "Unknown fields (including id, createdAt, updatedAt) are ignored.\nTypes are strict: year must be a JSON integer, cgpa a JSON number.\n",
+    "properties": {
+      "name": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "example": "John Doe"
+      },
+      "email": {
+        "type": "string",
+        "format": "email",
+        "maxLength": 254,
+        "example": "john@example.com"
+      },
+      "course": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100,
+        "example": "CSE"
+      },
+      "year": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 4,
+        "example": 3
+      },
+      "cgpa": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 10,
+        "example": 8.1
+      }
+    }
+  },
+  "StudentResponse": {
+    "type": "object",
+    "required": [
+      "success",
+      "data"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "success": {
+        "type": "boolean",
+        "enum": [
+          true
+        ]
+      },
+      "data": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email",
+          "course",
+          "year",
+          "cgpa",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{24}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "course": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "year": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4
+          },
+          "cgpa": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "StudentListResponse": {
+    "type": "object",
+    "required": [
+      "success",
+      "count",
+      "total",
+      "page",
+      "limit",
+      "data"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "success": {
+        "type": "boolean",
+        "enum": [
+          true
+        ]
+      },
+      "count": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Items in this page"
+      },
+      "total": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Items matching the filter"
+      },
+      "page": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      },
+      "data": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "id",
+            "name",
+            "email",
+            "course",
+            "year",
+            "cgpa",
+            "createdAt",
+            "updatedAt"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{24}$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "email": {
+              "type": "string",
+              "format": "email",
+              "maxLength": 254
+            },
+            "course": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "year": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4
+            },
+            "cgpa": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    }
+  },
+  "HealthResponse": {
+    "type": "object",
+    "required": [
+      "success",
+      "data"
+    ],
+    "properties": {
+      "success": {
+        "type": "boolean",
+        "enum": [
+          true
+        ]
+      },
+      "data": {
+        "type": "object",
+        "required": [
+          "status",
+          "storage"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          },
+          "storage": {
+            "type": "string",
+            "enum": [
+              "mongo",
+              "memory"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "ErrorResponse": {
+    "type": "object",
+    "required": [
+      "success",
+      "error"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "success": {
+        "type": "boolean",
+        "enum": [
+          false
+        ]
+      },
+      "error": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "VALIDATION_ERROR",
+              "INVALID_ID",
+              "INVALID_JSON",
+              "NOT_FOUND",
+              "DUPLICATE_EMAIL",
+              "ROUTE_NOT_FOUND",
+              "INTERNAL_ERROR"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "array",
+            "description": "Present for VALIDATION_ERROR, one entry per failing field",
+            "items": {
+              "type": "object",
+              "required": [
+                "field",
+                "message"
+              ],
+              "properties": {
+                "field": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
